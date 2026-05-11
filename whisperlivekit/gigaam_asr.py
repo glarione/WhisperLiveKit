@@ -1,13 +1,16 @@
 """GigaAM model backend for WhisperLiveKit."""
 
+import logging
 import tempfile
-from logging import logger
 from typing import Dict, List
 
 import gigaam
 import numpy as np
 
 from whisperlivekit.local_agreement.backends import ASRBase, ASRToken
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 class GigaAMASR(ASRBase):
