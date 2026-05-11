@@ -217,6 +217,7 @@ MODEL_CATALOG = [
     # Qwen3 MLX (native streaming on Apple Silicon)
     {"name": "qwen3-mlx:1.7b",  "family": "qwen3-mlx", "params": "1.7B", "disk": "1.8 GB", "languages": 12, "quality": "good",  "speed": "fast"},
     {"name": "qwen3-mlx:0.6b",  "family": "qwen3-mlx", "params": "0.6B", "disk": "0.7 GB", "languages": 12, "quality": "fair",  "speed": "fastest"},
+    {"name": "v3_e2e_rnnt",  "family": "gigaam", "params": "0.6B", "disk": "0.7 GB", "languages": 12, "quality": "fair",  "speed": "fastest"},
 ]
 
 
@@ -355,6 +356,8 @@ def _best_backend_for_model(model_entry: dict) -> str:
         return "qwen3"
     elif family == "qwen3-mlx":
         return "qwen3-mlx"
+    elif family == "gigaam":
+        return "gigaam"
     elif family == "whisper":
         if is_apple and _module_available("mlx_whisper"):
             return "mlx-whisper"
