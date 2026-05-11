@@ -33,6 +33,7 @@ dependencies = [
     "tqdm",
     "tiktoken",
     "gigaam",
+    "python-multipart",
 ]
 
 [project.optional-dependencies]
