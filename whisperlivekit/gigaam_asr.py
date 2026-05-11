@@ -1,11 +1,11 @@
 """GigaAM model backend for WhisperLiveKit."""
 
 import tempfile
+from logging import logger
 from typing import Dict, List
 
 import gigaam
 import numpy as np
-from loguru import logger
 
 from whisperlivekit.local_agreement.backends import ASRBase, ASRToken
 
