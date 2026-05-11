@@ -163,6 +163,14 @@ class TranscriptionEngine:
                 from whisperlivekit.warmup import warmup_asr
                 warmup_asr(self.asr, config.warmup_file)
                 logger.info("Using Qwen3-ASR backend with LocalAgreement policy")
+            elif config.backend == "gigaam":
+                from whisperlivekit.gigaam_asr import GigaAMASR
+                self.tokenizer = None
+                self.asr = GigaAMASR(
+                    **transcription_common_params,
+                    model_name=config.model_path or "v3_e2e_rnnt",
+                )
+                logger.info("Using GigaAM backend with LocalAgreement policy")
             elif config.backend_policy == "simulstreaming":
                 simulstreaming_params = {
                     "disable_fast_encoder": config.disable_fast_encoder,

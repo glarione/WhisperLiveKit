@@ -128,6 +128,15 @@ BACKENDS = [
         "streaming": "cloud",
         "devices": ["cloud"],
     },
+    {
+        "id": "gigaam",
+        "name": "GigaAM ASR",
+        "module": "gigaam_asr",
+        "install": "pip install gigaam",
+        "description": "GigaAM ASR",
+        "streaming": "chunk",
+        "devices": ["cpu"],
+    },
 ]
 
 
@@ -181,6 +190,8 @@ QWEN3_REPOS = {
     "1.7b": "Qwen/Qwen3-ASR-1.7B",
     "0.6b": "Qwen/Qwen3-ASR-0.6B",
 }
+GIGAAM_HF_REPO = "ai-sage/GigaAM-v3"
+
 QWEN3_ALIGNER_REPO = "Qwen/Qwen3-ForcedAligner-0.6B"
 
 # Model catalog: metadata for display in `wlk models`
@@ -326,6 +337,8 @@ def _model_is_downloaded(model_entry: dict, downloaded: dict) -> bool:
     elif family == "qwen3-mlx":
         size = name.split(":")[1] if ":" in name else "1.7b"
         return QWEN3_REPOS.get(size, "") in downloaded
+    elif family == "gigaam":
+        return GIGAAM_HF_REPO in downloaded
     return False
 
 
