@@ -145,6 +145,14 @@ class TranscriptionEngine:
                 self.tokenizer = None
                 self.asr = Qwen3VLLMMetalASR(**transcription_common_params)
                 logger.info("Using Qwen3-ASR vllm-metal in-process backend")
+            elif config.backend == "gigaam":
+                from whisperlivekit.gigaam_asr import GigaAMASR
+                self.tokenizer = None
+                gigaam_params = {
+                    **transcription_common_params,
+                }
+                self.asr = GigaAMASR(**gigaam_params)
+                logger.info("Using GigaAM %s in-process backend", config.gigaam_model_name)
             elif config.backend == "voxtral-mlx":
                 from whisperlivekit.voxtral_mlx_asr import VoxtralMLXASR
                 self.tokenizer = None
@@ -212,7 +220,7 @@ class TranscriptionEngine:
 
         self.translation_model = None
         if config.target_language:
-            if config.backend in {"qwen3-vllm", "qwen3-vllm-metal"}:
+            if config.backend in {"qwen3-vllm", "qwen3-vllm-metal", "gigaam"}:
                 raise ValueError(f"{config.backend} supports transcription only; translation is not supported.")
             if config.lan == 'auto' and config.backend_policy != "simulstreaming":
                 raise ValueError('Translation cannot be set with language auto when transcription backend is not simulstreaming')
@@ -251,6 +259,9 @@ def online_factory(args, asr, language=None):
     if backend == "qwen3-vllm-metal":
         from whisperlivekit.qwen3_vllm_metal_asr import Qwen3VLLMMetalOnlineProcessor
         return Qwen3VLLMMetalOnlineProcessor(asr)
+    if backend == "gigaam":
+        from whisperlivekit.gigaam_asr import GigaAMOnlineProcessor
+        return GigaAMOnlineProcessor(asr)
     if backend == "voxtral-mlx":
         from whisperlivekit.voxtral_mlx_asr import VoxtralMLXOnlineProcessor
         return VoxtralMLXOnlineProcessor(asr)

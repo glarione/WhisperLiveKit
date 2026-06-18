@@ -209,6 +209,9 @@ MODEL_CATALOG = [
     # Qwen3 vLLM GPU
     {"name": "qwen3-vllm:1.7b", "family": "qwen3-vllm", "params": "1.7B", "disk": "3.6 GB + aligner", "languages": 12, "quality": "good", "speed": "fast"},
     {"name": "qwen3-vllm:0.6b", "family": "qwen3-vllm", "params": "0.6B", "disk": "1.4 GB + aligner", "languages": 12, "quality": "fair", "speed": "fastest"},
+    # GigaAM (Russian-optimized ASR)
+    {"name": "gigaam:v3_e2e_rnnt", "family": "gigaam", "params": "240M", "disk": "1.0 GB", "languages": 1, "quality": "great", "speed": "fast"},
+    {"name": "gigaam:v3_ctc", "family": "gigaam", "params": "240M", "disk": "1.0 GB", "languages": 1, "quality": "great", "speed": "fast"},
 ]
 
 
@@ -332,6 +335,10 @@ def _model_is_downloaded(model_entry: dict, downloaded: dict) -> bool:
             QWEN3_REPOS.get(size, "") in downloaded
             and QWEN3_ALIGNER_REPO in downloaded
         )
+    elif family == "gigaam":
+        # GigaAM models are loaded from HuggingFace by model name
+        # Check if gigaam package can find the model
+        return True  # GigaAM downloads on-demand from HF
     return False
 
 
@@ -348,6 +355,8 @@ def _best_backend_for_model(model_entry: dict) -> str:
         return "qwen3-vllm-metal"
     elif family == "qwen3-vllm":
         return "qwen3-vllm"
+    elif family == "gigaam":
+        return "gigaam"
     elif family == "whisper":
         if is_apple and _module_available("mlx_whisper"):
             return "mlx-whisper"
@@ -497,6 +506,19 @@ def _resolve_pull_target(spec: str):
         targets.append(("qwen3-aligner", QWEN3_ALIGNER_REPO, "Qwen3 ForcedAligner"))
         return targets
 
+    # Handle gigaam
+    if backend_part == "gigaam" or size_part.startswith("gigaam"):
+        # GigaAM models are loaded on-demand from HuggingFace
+        # We just validate the model name
+        model_name = size_part.split(":")[-1] if ":" in spec else size_part
+        supported = ["v3_e2e_rnnt", "v3_ctc", "v3_ssl", "v2_ctc", "v2_rnnt", "v1_ctc", "v1_rnnt", "emo"]
+        if model_name not in supported:
+            print(f"  gigaam supports: {', '.join(supported)}")
+            return []
+        targets.append(("gigaam", model_name, f"GigaAM {model_name}"))
+        print(f"{size_part=}")
+        return targets
+
     # Handle whisper-family models with optional backend prefix
     if backend_part:
         # Specific backend requested
@@ -540,7 +562,7 @@ def _resolve_pull_target(spec: str):
         else:
             print(f"  Unknown model: {spec}")
             print(f"  Available sizes: {', '.join(WHISPER_SIZES)}")
-            print("  Other models: voxtral, voxtral-mlx, qwen3-vllm:1.7b, qwen3-vllm:0.6b, qwen3-vllm-metal:1.7b, qwen3-vllm-metal:0.6b")
+            print("  Other models: voxtral, voxtral-mlx, qwen3-vllm:1.7b, qwen3-vllm:0.6b, qwen3-vllm-metal:1.7b, qwen3-vllm-metal:0.6b, gigaam:v3_e2e_rnnt, gigaam:v3_ctc")
             return []
 
     return targets
@@ -1048,6 +1070,8 @@ def _resolve_run_spec(spec: str):
         return "qwen3-vllm-metal", None
     if spec == "qwen3-vllm":
         return "qwen3-vllm", None
+    if spec == "gigaam" or spec.startswith("gigaam:"):
+        return "gigaam", spec.split(":")[-1] if ":" in spec else "v3_e2e_rnnt"
 
     if spec in WHISPER_SIZES:
         return None, spec
@@ -1308,6 +1332,13 @@ def _probe_backend_state(processor) -> dict:
         info["backend_type"] = "qwen3-vllm"
         info["last_committed_time"] = getattr(transcription, "_last_committed_time", 0.0)
         info["buffer_words"] = len(transcription.get_buffer().text.split())
+
+    # GigaAM specifics
+    elif hasattr(transcription, "asr") and hasattr(transcription.asr, "backend_choice"):
+        if transcription.asr.backend_choice == "gigaam":
+            info["backend_type"] = "gigaam"
+            info["model_name"] = getattr(transcription.asr, "model_name", "v3_e2e_rnnt")
+            info["longform"] = getattr(transcription.asr, "longform", False)
 
     # SimulStreaming specifics
     elif hasattr(transcription, "prev_output"):

@@ -10,8 +10,11 @@ WORKDIR /app
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   build-essential \
+  ca-certificates \
+  git \
   python3-dev && \
-  rm -rf /var/lib/apt/lists/* 
+  rm -rf /var/lib/apt/lists/*  && \
+    update-ca-certificates
 
 
 # Install UV and set up the environment 

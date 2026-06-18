@@ -93,6 +93,11 @@ class WhisperLiveKitConfig:
     holdback_words: Optional[int] = None
     trim_sentence_buffer: bool = True
 
+    # GigaAM backends
+    gigaam_model_name: str = "v3_e2e_rnnt"
+    gigaam_longform: bool = False
+    gigaam_device: Optional[str] = None
+
     def __post_init__(self):
         # .en model suffix forces English
         if self.model_size and self.model_size.endswith(".en"):

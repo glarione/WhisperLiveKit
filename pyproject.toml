@@ -33,6 +33,7 @@ dependencies = [
     "tqdm",
     "tiktoken",
     "python-multipart",
+    "gigaam",
 ]
 
 [project.optional-dependencies]
@@ -56,10 +57,11 @@ voxtral-hf = [
 qwen3-vllm-metal = [
     'vllm-metal[stt]; python_version >= "3.12" and python_version < "3.13" and sys_platform == "darwin" and platform_machine == "arm64"',
 ]
-qwen3-vllm = [
-    'vllm[audio]>=0.20.0; sys_platform == "linux"',
-    'torchvision; sys_platform == "linux" and platform_machine == "x86_64"',
-]
+# gigaam = [
+#     "gigaam",
+#     "torch>=2.0.0",
+#     "torchaudio>=2.0.0",
+# ]
 listen = ["sounddevice>=0.4.6"]
 cpu = ["torch>=2.0.0", "torchaudio>=2.0.0"]
 cu129 = [
@@ -106,6 +108,14 @@ conflicts = [
         { extra = "qwen3-vllm-metal" },
         { extra = "diarization-sortformer" },
     ],
+    [
+        { extra = "gigaam" },
+        { extra = "cu129" },
+    ],
+    [
+        { extra = "gigaam" },
+        { extra = "diarization-diart" },
+    ],
 ]
 
 [tool.uv.sources]
@@ -123,6 +133,7 @@ torchaudio = [
 torchvision = [
     { index = "pytorch-cpu", extra = "diarization-diart", marker = "platform_system != 'Darwin'" },
 ]
+gigaam = { git = "https://github.com/salute-developers/GigaAM.git" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

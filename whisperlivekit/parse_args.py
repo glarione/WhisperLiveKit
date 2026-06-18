@@ -147,8 +147,8 @@ def parse_args():
         "--backend",
         type=str,
         default="auto",
-        choices=["auto", "mlx-whisper", "faster-whisper", "whisper", "openai-api", "voxtral", "voxtral-mlx", "qwen3-vllm", "qwen3-vllm-metal"],
-        help="Select the ASR backend implementation. Use 'qwen3-vllm' for Qwen3-ASR through in-process vLLM with ForcedAligner on GPU. Use 'qwen3-vllm-metal' for Qwen3-ASR through vllm-metal in-process STT on Apple Silicon.",
+        choices=["auto", "mlx-whisper", "faster-whisper", "whisper", "openai-api", "voxtral", "voxtral-mlx", "qwen3-vllm", "qwen3-vllm-metal", "gigaam"],
+        help="Select the ASR backend implementation. Use 'gigaam' for GigaAM v3 Russian-optimized ASR. Use 'qwen3-vllm' for Qwen3-ASR through in-process vLLM with ForcedAligner on GPU. Use 'qwen3-vllm-metal' for Qwen3-ASR through vllm-metal in-process STT on Apple Silicon.",
     )
     parser.add_argument(
         "--no-vac",
@@ -252,6 +252,29 @@ def parse_args():
         default=True,
         dest="trim_sentence_buffer",
         help="Disable Qwen3 vllm-metal buffer trimming at committed sentence boundaries.",
+    )
+
+    # GigaAM-specific arguments
+    parser.add_argument(
+        "--gigaam-model",
+        type=str,
+        default="v3_e2e_rnnt",
+        dest="gigaam_model_name",
+        help="GigaAM model name to use (e.g., v3_e2e_rnnt, v3_ctc, v3_ssl). Default: v3_e2e_rnnt",
+    )
+    parser.add_argument(
+        "--gigaam-longform",
+        action="store_true",
+        default=False,
+        dest="gigaam_longform",
+        help="Enable long-form transcription with VAD segmentation for audio >25s.",
+    )
+    parser.add_argument(
+        "--gigaam-device",
+        type=str,
+        default=None,
+        dest="gigaam_device",
+        help="Device to use for GigaAM (cuda, cpu, or None for auto).",
     )
 
     # SimulStreaming-specific arguments
