@@ -150,6 +150,9 @@ class TranscriptionEngine:
                 self.tokenizer = None
                 gigaam_params = {
                     **transcription_common_params,
+                    "model_name": config.gigaam_model_name,
+                    "longform": config.gigaam_longform,
+                    "device": config.gigaam_device,
                 }
                 self.asr = GigaAMASR(**gigaam_params)
                 logger.info("Using GigaAM %s in-process backend", config.gigaam_model_name)
