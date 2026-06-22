@@ -475,16 +475,19 @@ class GigaAMOnlineProcessor:
         return Transcript.from_tokens(tokens=tokens, sep=self.asr.sep)
     
     def _reset_for_next_utterance(self):
-        """Reset state for next utterance."""
+        """Reset state for next utterance without clearing audio buffer."""
+        # Don't clear audio_buffer - keep it for diarization continuity
+        # Only reset transcription state
         self._buffer_time_offset += self._audio_duration()
         self._last_committed_time = self._buffer_time_offset
-        self.audio_buffer = np.array([], dtype=np.float32)
         self._samples_since_last_inference = 0
         self._current_tokens = []
     
     def start_silence(self) -> Tuple[List[ASRToken], float]:
         """
         Handle start of silence (utterance boundary).
+        
+        Flushes committed tokens but keeps audio buffer for diarization continuity.
         
         Args:
             silence_start: Start time of silence
@@ -494,17 +497,34 @@ class GigaAMOnlineProcessor:
         """
         tokens = self._commit_available(flush=True)
         logger.info("[gigaam] start_silence: flushed %d words", len(tokens))
-        self._reset_for_next_utterance()
+        # Don't reset audio buffer - keep it for diarization
+        # Only reset transcription state
+        self._buffer_time_offset += self._audio_duration()
+        self._last_committed_time = self._buffer_time_offset
+        self._samples_since_last_inference = 0
+        self._current_tokens = []
         return tokens, self.end
     
     def end_silence(self, silence_duration: float, offset: float):
         """
         Handle end of silence.
         
+        Important: Insert silence audio chunks for diarization continuity.
+        The Sortformer diarization model needs to see silence periods to
+        detect speaker changes properly.
+        
         Args:
             silence_duration: Duration of silence in seconds
-            offset: Offset time
+            offset: Offset time (unused but kept for compatibility)
         """
+        # Insert silence audio chunks to maintain diarization continuity
+        # This is critical for Sortformer to detect speaker changes
+        silence_samples = int(silence_duration * self.SAMPLING_RATE)
+        if silence_samples > 0:
+            silence_audio = np.zeros(silence_samples, dtype=np.float32)
+            self.insert_audio_chunk(silence_audio, self.end + silence_duration)
+        
+        # Update time offsets
         self._buffer_time_offset += silence_duration
         self._last_committed_time += silence_duration
         self.end += silence_duration
