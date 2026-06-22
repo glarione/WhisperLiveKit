@@ -211,6 +211,7 @@ MODEL_CATALOG = [
     {"name": "qwen3-vllm:0.6b", "family": "qwen3-vllm", "params": "0.6B", "disk": "1.4 GB + aligner", "languages": 12, "quality": "fair", "speed": "fastest"},
     # GigaAM (Russian-optimized ASR)
     {"name": "gigaam:v3_e2e_rnnt", "family": "gigaam", "params": "240M", "disk": "1.0 GB", "languages": 1, "quality": "great", "speed": "fast"},
+    {"name": "gigaam:v3_rnnt", "family": "gigaam", "params": "240M", "disk": "1.0 GB", "languages": 1, "quality": "great", "speed": "fast"},
     {"name": "gigaam:v3_ctc", "family": "gigaam", "params": "240M", "disk": "1.0 GB", "languages": 1, "quality": "great", "speed": "fast"},
 ]
 
